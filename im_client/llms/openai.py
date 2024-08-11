@@ -32,8 +32,16 @@ except ImportError:
     is_openai_available = False
     logger.warn("openai package is not installed")
 else:
-    if os.environ.get("OPENAI_API_KEY") is None and os.environ.get("AZURE_OPENAI_API_KEY") is None:
+    openai_api_key = os.environ.get("OPENAI_API_KEY")
+    if openai_api_key:
+        openai.api_key = openai_api_key
+        # 可选：设置 OPENAI_BASE_URL 如果需要
+        openai_base_url = os.environ.get("OPENAI_BASE_URL")
+        if openai_base_url:
+            openai.base_url = openai_base_url
+    else:
         logger.warn("OPENAI_API_KEY is not set. OpenAI models will not be available.")
+
     if os.environ.get("AZURE_OPENAI_API_KEY") is not None:
         openai.api_type = "azure"
         openai.api_key = os.environ.get("AZURE_OPENAI_API_KEY")
@@ -109,13 +117,13 @@ class OpenAIChat(BaseChatModel):
         before_sleep=log_retry,
     )
     async def agenerate_response(
-        self,
-        prepend_prompt: str | list[str] = "",
-        history: List[dict] = [],
-        append_prompt: str | list[str] = "",
-        tools: List[dict] | NotGiven = NOT_GIVEN,
-        response_format: dict | NotGiven = NOT_GIVEN,
-        **kwargs,
+            self,
+            prepend_prompt: str | list[str] = "",
+            history: List[dict] = [],
+            append_prompt: str | list[str] = "",
+            tools: List[dict] | NotGiven = NOT_GIVEN,
+            response_format: dict | NotGiven = NOT_GIVEN,
+            **kwargs,
     ) -> LLMResult:
         if isinstance(prepend_prompt, str):
             prepend_prompt = [prepend_prompt]
@@ -223,13 +231,13 @@ class OpenAIChat(BaseChatModel):
         before_sleep=log_retry,
     )
     async def generate_response(
-        self,
-        prepend_prompt: str | list[str] = "",
-        history: List[dict] = [],
-        append_prompt: str | list[str] = "",
-        tools: List[dict] | NotGiven = NOT_GIVEN,
-        response_format: dict | NotGiven = NOT_GIVEN,
-        **kwargs,
+            self,
+            prepend_prompt: str | list[str] = "",
+            history: List[dict] = [],
+            append_prompt: str | list[str] = "",
+            tools: List[dict] | NotGiven = NOT_GIVEN,
+            response_format: dict | NotGiven = NOT_GIVEN,
+            **kwargs,
     ) -> LLMResult:
         if isinstance(prepend_prompt, str):
             prepend_prompt = [prepend_prompt]
@@ -376,8 +384,8 @@ class OpenAIChat(BaseChatModel):
             raise ValueError(f"Model type {model} not supported")
 
         return (
-            self.total_prompt_tokens * input_cost_map[model] / 1000.0
-            + self.total_completion_tokens * output_cost_map[model] / 1000.0
+                self.total_prompt_tokens * input_cost_map[model] / 1000.0
+                + self.total_completion_tokens * output_cost_map[model] / 1000.0
         )
 
 
@@ -389,11 +397,11 @@ class OpenAIChat(BaseChatModel):
 def get_embedding(text: str) -> np.array:
     try:
         text = text.replace("\n", " ")
-        if openai.api_type == "azure":
+        if openai.api_type == "azure":   #"text-embedding-ada-002"
             embedding = sync_openai_client.embeddings.create(input=[text], deployment_id="text-embedding-ada-002")[
                 "data"
             ][0]["embedding"]
-        else:
+        else:  # model="text-embedding-ada-002"
             embedding = sync_openai_client.embeddings.create(input=[text], model="text-embedding-ada-002")["data"][0][
                 "embedding"
             ]

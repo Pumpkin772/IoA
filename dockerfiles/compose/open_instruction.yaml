@@ -4,6 +4,8 @@ version: "3"
 services:
   Server:
     image: ioa-server:latest
+    #build指定如何构建镜像，包括构建上下文(context)和Dockerfile的位置，因为Docker需要根据Dockerfile中的指令来构建镜像
+    #除了Dockerfile，构建上下文还应该包含Dockerfile中引用的所有文件和目录
     build:
       context: ../../
       dockerfile: dockerfiles/server.Dockerfile
@@ -12,7 +14,7 @@ services:
       - .env
     environment:
       - OPENAI_API_KEY
-      #- OPENAI_BASE_URL
+      - OPENAI_BASE_URL
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/sqlite:/app/database
       - ../../configs/server_configs:/app/configs
